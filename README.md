@@ -43,7 +43,11 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 - There is still a lot of learning for me to do with regards to React as I really struggled to do certain things such as making the select option work properly and the full country names appearing next to the codes 
 
-- There are errors I got at for the data.rates the [0] & [1] arrays were both GBP and I didnt have the knowledge myself to solve this error 
+- There are errors I got at for the data.rates the [0] & [1] arrays were both GBP and I struggled to solve this 
+
+- I wasnt able to fully implement a timer function as I was unfamiliar with how to translate it from JS to React.JS at this time 
+
+- Unable to add the search functionality in React at this time - more research is required 
 
 
 ### Changes made
