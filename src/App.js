@@ -1,97 +1,125 @@
-//import react itself and also useEffect which allows me to run a function to fetch the API data
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import { useCallback, useEffect, useState } from "react";
 
-//I created this js file so that I have a something that outputs the conversion 
-import CurrencyRow from './CurrencyRow'
-
-
-//this is the api that has the latest currency conversions
-const BASE_URL = 'https://api.exchangerate-api.com/v4/latest/GBP'
-
-
+export const RATES_URL = "https://api.exchangerate-api.com/v4/latest/";
+export const CURRENCIES_URL =
+  "https://openexchangerates.org/api/currencies.json";
 
 function App() {
-  
-  //useState() hook is being used here and its letting me add react state to these function components 
-  const [currencyOptions, setCurrencyOptions] = useState([])
-  const [fromCurrency, setFromCurrency] = useState()
-  const [toCurrency, setToCurrency] = useState()
-  const [exchangeRate, setExchangeRate] = useState()
-  const [amount, setAmount] = useState(1)
-  const [amountInFromCurrency, setAmountInFromCurrency] = useState(true)
-  //console.log(exchangeRate)
+  const [baseRate, setBaseRate] = useState("GBP");
+  const [rates, setRates] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [from, setFrom] = useState("GBP");
+  const [to, setTo] = useState("GBP");
+  const [amount, setAmount] = useState("");
+  const [message, setMessage] = useState("");
+  const [reverse, setReverse] = useState(false);
 
-  //console.log(currencyOptions)
+  const getRates = useCallback(async (rate = "GBP") => {
+    const ratesRes = await fetch(RATES_URL + rate);
+    const ratesJSON = await ratesRes.json();
+    setBaseRate(ratesJSON.base);
+    setRates(ratesJSON.rates);
 
+    const currenciesRes = await fetch(CURRENCIES_URL);
+    const currenciesJSON = await currenciesRes.json();
 
-  let toAmount, fromAmount
-  if (amountInFromCurrency) {
-    fromAmount = amount
-    toAmount = amount * exchangeRate
-  } else {
-    toAmount = amount
-    fromAmount = amount / exchangeRate
-  }
+    const options = Object.keys(ratesJSON.rates).map((rate) => {
+      const displayValue = currenciesJSON[rate];
+      const code = rate;
+      return {
+        code,
+        displayValue
+      };
+    });
 
-  //implement useEffect here to fetch the API data and display it
-  //the reason I used promises instead of async await is because its such a small app its not necessary
-  //and doesn't interrupt the function at any given time 
-  useEffect(() => {
-    fetch(BASE_URL)
-      .then(res => res.json())
-      .then(data => {
-        const firstCurrency = Object.keys(data.rates)[1]
-        setCurrencyOptions([data.base, ...Object.keys(data.rates)])
-        setFromCurrency(data.base)
-        setToCurrency(firstCurrency)
-        setExchangeRate(data.rates[firstCurrency])
+    setOptions(options);
+  }, []);
 
-        //this calls the data for me to check
-        //console.log(data)
-      })
-  }, [])
+  const onFromChange = (e) => {
+    const { value } = e.target;
+    setFrom(value);
 
-
-  useEffect(() => {
-    if (fromCurrency != null && toCurrency != null) {
-      fetch(`${BASE_URL}?base=${fromCurrency}&symbols=${toCurrency}`)
-      .then(res => res.json())
-      .then(data => setExchangeRate(data.rates[toCurrency]))
+    if (!reverse) {
+      setBaseRate(value);
     }
-    
-  }, [fromCurrency, toCurrency])
+  };
 
-  function handleFromAmountChange(event) {
-    setAmount(event.target.value)
-    setAmountInFromCurrency(true)
-  }
+  const onToChange = (e) => {
+    const { value } = e.target;
+    setTo(value);
 
-  function handleToAmountChange(event) {
-    setAmount(event.target.value)
-    setAmountInFromCurrency(false)
-  }
+    if (reverse) {
+      setBaseRate(value);
+    }
+  };
+
+  const onClick = () => {
+    setReverse(!reverse);
+  };
+
+  useEffect(() => {
+    getRates();
+  }, [getRates]);
+
+  useEffect(() => {
+    if (amount) {
+      const num = parseFloat(amount);
+      const toRate = rates[to];
+
+      let message = `${num} ${from} = ${num * toRate} ${to}`;
+      if (reverse) {
+        message = `${num * toRate} ${to} = ${num} ${from}`;
+      }
+
+      setMessage(message);
+    }
+  }, [from, to, amount, baseRate, rates, reverse]);
+
+  useEffect(() => {
+    getRates(baseRate);
+  }, [baseRate, getRates]);
 
   return (
-    <>
-      <h1>Convert</h1>
-      <CurrencyRow 
-        //pass in the currencyOptions as a prop
-        currencyOptions={currencyOptions}
-        selectedCurrency={fromCurrency}
-        onChangeCurrency={event => setFromCurrency(event.target.value)}
-        onChangeAmount={handleFromAmountChange}
-        amount ={fromAmount}
+    <div>
+      <div>
+        <label htmlFor="amount">Amount:</label>
+        <input
+          name="amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
         />
-      <div className= 'equals'>=</div>
-      <CurrencyRow 
-        currencyOptions={currencyOptions}
-        selectedCurrency={toCurrency}
-        onChangeCurrency={event => setToCurrency(event.target.value)}
-        onChangeAmount={handleToAmountChange}
-        amount={toAmount}
-        />
-    </>
+      </div>
+      <div>
+        <label htmlFor="from-select">From Currency:</label>
+        <select value={from} name="from" onChange={onFromChange}>
+          {options.map((option, idx) => {
+            return (
+              <option key={idx} value={option.code}>
+                {option.displayValue}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="to-select">To Currency:</label>
+        <select value={to} name="to" onChange={onToChange}>
+          {options.map((option, idx) => {
+            return (
+              <option key={idx} value={option.code}>
+                {option.displayValue}
+              </option>
+            );
+          })}
+        </select>
+      </div>
+      <div>
+        <button name="reverse" onClick={onClick}>
+          Reverse
+        </button>
+      </div>
+      {message ? <div>{message}</div> : null}
+    </div>
   );
 }
 
