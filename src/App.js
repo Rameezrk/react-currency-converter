@@ -1,5 +1,6 @@
 //import the react elements to be able to use with this file 
 import { useCallback, useEffect, useState } from "react";
+import './App.css'
 
 //getting the urls and putting them into a variable to be able to use further fetch wise 
 export const RATES_URL = "https://api.exchangerate-api.com/v4/latest/";
@@ -71,7 +72,7 @@ function App() {
     setReverse(!reverse);
   };
 
-  
+
 
   useEffect(() => {
     getRates();
@@ -103,7 +104,7 @@ function App() {
     <div>
       <div>
         <label htmlFor="amount">Amount:</label>
-        <input
+        <input 
           name="amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
@@ -139,7 +140,12 @@ function App() {
         </button>
       </div>
 
-      
+      <div>
+        <button name="reverse" onClick={onClick}>
+          Reverse with timer 
+        </button>
+      </div>
+
       {message ? <div>{message}</div> : null}
     </div>
   );
