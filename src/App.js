@@ -1,6 +1,7 @@
 //import the react elements to be able to use with this file 
 import { useCallback, useEffect, useState } from "react";
 
+import './App.css'
 //getting the urls and putting them into a variable to be able to use further fetch wise 
 export const RATES_URL = "https://api.exchangerate-api.com/v4/latest/";
 export const CURRENCIES_URL =

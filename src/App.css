@@ -7,23 +7,18 @@ body {
   text-align: center;
 }
 
-h1 {
+div {
   margin: 0;
   margin-bottom: 0.5rem;
 }
 
-.input {
+input {
   border: 1px solid #333;
   border-radius: 0.3em;
   padding: .25rem;
   width: 7em;
 }
 
-select {
-  margin-left: .5rem;
-}
-
-.equals {
-  font-weight: bold;
-  font-size: 2rem;
+label {
+  margin-right: .25rem;
 }
